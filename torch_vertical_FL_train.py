@@ -209,8 +209,8 @@ def main(args):
         # y_train = torch.from_numpy(y_train).long()
         # y_test = torch.from_numpy(y_test).long()
         
-        y_train = torch.from_numpy(y_train).float()
-        y_test = torch.from_numpy(y_test).float()
+        y_train = torch.from_numpy(y_train.to_numpy()).float()
+        y_test = torch.from_numpy(y_test.to_numpy()).float()
     
         train_loader_list.append(DataLoader(y_train, batch_size=args.batch_size))
         test_loader_list.append(DataLoader(y_test, batch_size=args.batch_size))
