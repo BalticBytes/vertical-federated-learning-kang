@@ -1,3 +1,26 @@
+# Credit
+
+The original authors are
+
+- Kang Wei
+- Jun Li
+- Chuan Ma
+- Ming Ding
+- Sha Wei
+- Fan Wu
+- Guihai Chen
+- Thilina Ranbaduge
+
+Corresponding paper can be found here: https://arxiv.org/abs/2202.04309
+Original github repository can be found here: https://github.com/AdamWei-boop/Vertical_FL
+
+# Changes from me
+
+There were some errors which probably stem from not having the exact same data.
+The data was not included in the original zip, so I added it myself to the best of my ability.
+
+Finally I was able to reproduce everything with only minor changes to the code.
+
 # Multi-headed Vertical Federated Neural Network
 
 Prerequisites
