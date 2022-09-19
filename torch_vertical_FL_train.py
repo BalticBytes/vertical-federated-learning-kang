@@ -5,6 +5,7 @@ Created on Tue Nov  9 09:43:55 2021
 @author: adamwei
 """
 import argparse
+from distutils.dir_util import copy_tree
 import time
 import pandas as pd
 from thop import profile
@@ -24,6 +25,9 @@ Reference
     https://www.kaggle.com/c/avazu-ctr-prediction
 """
 from torch_model import MlpModel, torch_organization_model, torch_top_model
+
+import logging
+
 
 def main(args):
     
@@ -158,6 +162,7 @@ def main(args):
         print('Ming revised the codes on 12/11/2021 to realize re-configurable vertical FL.')       
         print('\nThere are {} participant organizations:'.format(organization_num))
         
+        loggers = []
         # define the attributes in each group for each organization
         attribute_groups = []
         attribute_start_idx = 0
@@ -166,6 +171,13 @@ def main(args):
             attribute_groups.append(columns[attribute_start_idx : attribute_end_idx])
             attribute_start_idx = attribute_end_idx
             print('The attributes held by Organization {0}: {1}'.format(organization_idx, attribute_groups[organization_idx]))                        
+            
+            org_logger = logging.getLogger(f"org-{organization_idx}")
+            handler = logging.handlers.RotatingFileHandler(f"/dev/logs/org-{organization_idx}.log")
+            org_logger.addHandler(handler)
+            org_logger.setLevel(logging.DEBUG)
+            loggers.append(org_logger)
+            org_logger.info(f"Attributes = {attribute_groups[organization_idx]}")
         
         # get the vertically split data with one-hot encoding for multiple organizations
         vertical_splitted_data = {}
@@ -179,6 +191,7 @@ def main(args):
                 chy_one_hot_enc.fit_transform(vertical_splitted_data[organization_idx])
                 
             print('The shape of the encoded dataset held by Organization {0}: {1}'.format(organization_idx, np.shape(encoded_vertical_splitted_data[organization_idx])))                       
+            loggers[organization_idx].info(f"Dataset shape = {np.shape(encoded_vertical_splitted_data[organization_idx])}")
         
         # set up the random seed for dataset split
         random_seed = 1001
@@ -229,10 +242,17 @@ def main(args):
                 torch_organization_model(X_train_vertical_FL[organization_idx].shape[-1],\
                                 organization_hidden_units_array[organization_idx],
                                 organization_output_dim[organization_idx])
-             
+            loggers[organization_idx].info(organization_models[organization_idx])
+        
+        top_logger = logging.getLogger("top-logger")
+        handler = logging.handlers.RotatingFileHandler(f"/dev/logs/top.log")
+        top_logger.addHandler(handler)
+        top_logger.setLevel(logging.DEBUG)
+        loggers.append(top_logger)
+
         # build the top model over the client models
         top_model = torch_top_model(sum(organization_output_dim), top_hidden_units, top_output_dim)
-    
+        top_logger.info(top_model)
         # define the neural network optimizer
         optimizer = torch.optim.Adam(top_model.parameters(), lr=0.002)
         
@@ -272,11 +292,19 @@ def main(args):
                     for organization_idx in range(1, organization_num):
                         organization_outputs_cat = torch.cat((organization_outputs_cat,\
                                         organization_outputs[organization_idx]), 1)
-                    
+                
+                top_logger.info(f"Epoch = {i} / {epochs}")
+                top_logger.info(f"Input = {organization_outputs_cat}")
+                
+
                 outputs = top_model(organization_outputs_cat)
+                top_logger.info(f"Output = {outputs}")
+
                 logits = torch.sigmoid(outputs)
                 logits = torch.reshape(logits, shape=[len(logits)])
+                top_logger.info(f"logits = {logits}")
                 loss = criterion(logits, y_train[batch_idxs])
+                top_logger.info(f"loss = {loss}")
                 loss.backward()
                 optimizer.step()
                 
