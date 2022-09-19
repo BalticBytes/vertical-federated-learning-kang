@@ -18,6 +18,6 @@ six==1.16.0
 sklearn==0.0
 thop==0.1.1.post2207130030
 threadpoolctl==3.1.0
-torch==1.8.0
+torch==1.11.0
 tqdm==4.64.0
 typing_extensions==4.3.0
