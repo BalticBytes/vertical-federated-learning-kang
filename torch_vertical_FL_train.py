@@ -152,14 +152,7 @@ def main(args):
     auc_array = []
     test_epoch_array = []
     
-    if model_type == 'vertical':
-                
-        # print out the vertical FL setting 
-        print('\nThe current vertical FL has a non-configurable structure.')
-        print('Reconfigurable vertical FL can be achieved by simply changing the attribute group split!')
-        
-        # Ming revised the following codes on 12/11/2021 to realize re-configurable vertical FL
-        print('Ming revised the codes on 12/11/2021 to realize re-configurable vertical FL.')       
+    if model_type == 'vertical':     
         print('\nThere are {} participant organizations:'.format(organization_num))
         
         loggers = []
@@ -184,7 +177,6 @@ def main(args):
         encoded_vertical_splitted_data = {}
         chy_one_hot_enc = preprocessing.OneHotEncoder(sparse=False, handle_unknown='ignore')
         for organization_idx in range(organization_num):
-            
             vertical_splitted_data[organization_idx] = X[attribute_groups[organization_idx]].values#.astype('float32')
             encoded_vertical_splitted_data[organization_idx] = chy_one_hot_enc.fit_transform(vertical_splitted_data[organization_idx])
             
@@ -207,7 +199,6 @@ def main(args):
                     train_test_split(encoded_vertical_splitted_data[organization_idx], y, test_size=0.2, random_state=random_seed)
 
         for organization_idx in range(organization_num):
-        
             X_train_vertical_FL[organization_idx] = torch.from_numpy(X_train_vertical_FL[organization_idx]).float()
             X_test_vertical_FL[organization_idx] = torch.from_numpy(X_test_vertical_FL[organization_idx]).float()
                       
@@ -245,27 +236,21 @@ def main(args):
         
         optimizer_organization_list = []
         for organization_idx in range(organization_num):
-            
             optimizer_organization_list.append(torch.optim.Adam(organization_models[organization_idx].parameters(), lr=0.002))
 
-        #optimizer = optimizers.SGD(learning_rate=0.002, momentum=0)
-    
         # conduct vertical FL
         print('\nStart vertical FL......\n')   
         
-        # criterion = nn.CrossEntropyLoss()
         criterion = nn.BCELoss()
         
         top_model.train()
         for i in range(epochs):
-            
             batch_idxs_list = batch_split(len(X_train_vertical_FL[0]), args.batch_size, args.batch_type)
             
             for batch_idxs in batch_idxs_list:
                 optimizer.zero_grad()
                 
                 for organization_idx in range(organization_num):
-                    
                     optimizer_organization_list[organization_idx].zero_grad()
                 
                 organization_outputs = {}
@@ -291,7 +276,6 @@ def main(args):
                 optimizer.step()
                 
                 for organization_idx in range(organization_num):
-                    
                     optimizer_organization_list[organization_idx].step()
    
             # let the program report the simulation progress
@@ -303,7 +287,6 @@ def main(args):
             
                 organization_outputs_for_test_cat = organization_outputs_for_test[0]
                 if len(organization_outputs_for_test) >= 2:
-                    
                     for organization_idx in range(1, organization_num):
                         organization_outputs_for_test_cat = torch.cat((organization_outputs_for_test_cat,\
                                         organization_outputs_for_test[organization_idx]), 1)
@@ -311,8 +294,7 @@ def main(args):
                 outputs = top_model(organization_outputs_for_test_cat)
                 log_probs = torch.sigmoid(outputs)
                 log_probs = torch.reshape(log_probs, shape=[len(log_probs)])
-                # pre = torch.argmax(log_probs, axis=1)
-                # acc = accuracy_score(y_test, pre)
+                
                 auc = roc_auc_score(y_test, log_probs.data)
                 print('For the {0}-th epoch, train loss: {1}, test auc: {2}'.format(i+1, loss.detach().numpy(), auc))
                 
