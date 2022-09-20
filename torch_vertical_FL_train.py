@@ -29,7 +29,6 @@ from torch_model import MlpModel, torch_organization_model, torch_top_model
 import logging
 import logging.handlers
 
-
 def main(args):
     
     data_type = args.data_type                  # define the data options: 'original', 'encoded'
@@ -293,19 +292,15 @@ def main(args):
                     for organization_idx in range(1, organization_num):
                         organization_outputs_cat = torch.cat((organization_outputs_cat,\
                                         organization_outputs[organization_idx]), 1)
+                        loggers[organization_idx].info(f"{i} | {organization_outputs[organization_idx]}")
                 
-                top_logger.info(f"Epoch = {i} / {epochs}")
-                top_logger.info(f"Input = {organization_outputs_cat}")
-                
-
                 outputs = top_model(organization_outputs_cat)
-                top_logger.info(f"Output = {outputs}")
+                top_logger.info(f"{i} | Output = {outputs}")
 
                 logits = torch.sigmoid(outputs)
                 logits = torch.reshape(logits, shape=[len(logits)])
-                top_logger.info(f"logits = {logits}")
                 loss = criterion(logits, y_train[batch_idxs])
-                top_logger.info(f"loss = {loss}")
+                top_logger.info(f"{i} | loss = {loss}")
                 loss.backward()
                 optimizer.step()
                 
