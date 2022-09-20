@@ -27,6 +27,7 @@ Reference
 from torch_model import MlpModel, torch_organization_model, torch_top_model
 
 import logging
+import logging.handlers
 
 
 def main(args):
@@ -55,7 +56,7 @@ def main(args):
             X = X.rename({'skin':'race'}, axis=1)
  
             # Ming added the following codes on 11/11/2021 to perform a quick sanity check of the dataset
-            X.head()
+            print(X.head())
             for attribute in X.columns:
                 #print(dt.value_counts(dt[attribute]))
                 plt.figure()
@@ -173,7 +174,7 @@ def main(args):
             print('The attributes held by Organization {0}: {1}'.format(organization_idx, attribute_groups[organization_idx]))                        
             
             org_logger = logging.getLogger(f"org-{organization_idx}")
-            handler = logging.handlers.RotatingFileHandler(f"/dev/logs/org-{organization_idx}.log")
+            handler = logging.handlers.RotatingFileHandler(f"/workspaces/vertical-federated-learning-kang/logs/org-{organization_idx}.log")
             org_logger.addHandler(handler)
             org_logger.setLevel(logging.DEBUG)
             loggers.append(org_logger)
@@ -245,7 +246,7 @@ def main(args):
             loggers[organization_idx].info(organization_models[organization_idx])
         
         top_logger = logging.getLogger("top-logger")
-        handler = logging.handlers.RotatingFileHandler(f"/dev/logs/top.log")
+        handler = logging.handlers.RotatingFileHandler(f"/workspaces/vertical-federated-learning-kang/logs/top.log")
         top_logger.addHandler(handler)
         top_logger.setLevel(logging.DEBUG)
         loggers.append(top_logger)
@@ -268,7 +269,7 @@ def main(args):
         
         # criterion = nn.CrossEntropyLoss()
         criterion = nn.BCELoss()
-    
+        top_logger.info(X_train_vertical_FL[0][[1,2,30]])
         top_model.train()
         for i in range(epochs):
             
