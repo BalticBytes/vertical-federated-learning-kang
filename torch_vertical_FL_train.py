@@ -173,7 +173,7 @@ def main(args):
             print('The attributes held by Organization {0}: {1}'.format(organization_idx, attribute_groups[organization_idx]))                        
             
             org_logger = logging.getLogger(f"org-{organization_idx}")
-            handler = logging.handlers.RotatingFileHandler(f"/workspaces/vertical-federated-learning-kang/logs/org-{organization_idx}.log")
+            handler = logging.FileHandler(f"/workspaces/vertical-federated-learning-kang/logs/org-{organization_idx}.log", mode="w+")
             org_logger.addHandler(handler)
             org_logger.setLevel(logging.DEBUG)
             loggers.append(org_logger)
@@ -243,9 +243,10 @@ def main(args):
                                 organization_hidden_units_array[organization_idx],
                                 organization_output_dim[organization_idx])
             loggers[organization_idx].info(organization_models[organization_idx])
+            loggers[organization_idx].info(f"Example row (0) = {X_train_vertical_FL[organization_idx][0]}")
         
         top_logger = logging.getLogger("top-logger")
-        handler = logging.handlers.RotatingFileHandler(f"/workspaces/vertical-federated-learning-kang/logs/top.log")
+        handler = logging.FileHandler(f"/workspaces/vertical-federated-learning-kang/logs/top.log", mode="w+")
         top_logger.addHandler(handler)
         top_logger.setLevel(logging.DEBUG)
         loggers.append(top_logger)
@@ -268,7 +269,7 @@ def main(args):
         
         # criterion = nn.CrossEntropyLoss()
         criterion = nn.BCELoss()
-        top_logger.info(X_train_vertical_FL[0][[1,2,30]])
+        
         top_model.train()
         for i in range(epochs):
             
@@ -285,17 +286,16 @@ def main(args):
                 for organization_idx in range(organization_num):
                         organization_outputs[organization_idx] = \
                             organization_models[organization_idx](X_train_vertical_FL[organization_idx][batch_idxs])
-    
-                
+                        loggers[organization_idx].info(f"{i} | output = {organization_outputs[organization_idx]}")
+                    
                 organization_outputs_cat = organization_outputs[0]
                 if len(organization_outputs) >= 2:
                     for organization_idx in range(1, organization_num):
                         organization_outputs_cat = torch.cat((organization_outputs_cat,\
                                         organization_outputs[organization_idx]), 1)
-                        loggers[organization_idx].info(f"{i} | {organization_outputs[organization_idx]}")
                 
                 outputs = top_model(organization_outputs_cat)
-                top_logger.info(f"{i} | Output = {outputs}")
+                top_logger.info(f"{i} | output = {outputs[0]}")
 
                 logits = torch.sigmoid(outputs)
                 logits = torch.reshape(logits, shape=[len(logits)])
