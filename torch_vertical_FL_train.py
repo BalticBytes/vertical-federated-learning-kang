@@ -185,11 +185,9 @@ def main(args):
         chy_one_hot_enc = preprocessing.OneHotEncoder(sparse=False, handle_unknown='ignore')
         for organization_idx in range(organization_num):
             
-            vertical_splitted_data[organization_idx] = \
-                X[attribute_groups[organization_idx]].values#.astype('float32')
-            encoded_vertical_splitted_data[organization_idx] = \
-                chy_one_hot_enc.fit_transform(vertical_splitted_data[organization_idx])
-                
+            vertical_splitted_data[organization_idx] = X[attribute_groups[organization_idx]].values#.astype('float32')
+            encoded_vertical_splitted_data[organization_idx] = chy_one_hot_enc.fit_transform(vertical_splitted_data[organization_idx])
+            
             print('The shape of the encoded dataset held by Organization {0}: {1}'.format(organization_idx, np.shape(encoded_vertical_splitted_data[organization_idx])))                       
             loggers[organization_idx].info(f"Dataset shape = {np.shape(encoded_vertical_splitted_data[organization_idx])}")
         
@@ -208,26 +206,14 @@ def main(args):
                 X_train_vertical_FL[organization_idx], X_test_vertical_FL[organization_idx], _, _ = \
                     train_test_split(encoded_vertical_splitted_data[organization_idx], y, test_size=0.2, random_state=random_seed)
 
-        train_loader_list, test_loader_list = [], []
         for organization_idx in range(organization_num):
         
             X_train_vertical_FL[organization_idx] = torch.from_numpy(X_train_vertical_FL[organization_idx]).float()
             X_test_vertical_FL[organization_idx] = torch.from_numpy(X_test_vertical_FL[organization_idx]).float()
-            train_loader_list.append(DataLoader(X_train_vertical_FL[organization_idx], batch_size=args.batch_size))
-            test_loader_list.append(DataLoader(X_test_vertical_FL[organization_idx], batch_size=len(X_test_vertical_FL[organization_idx]), shuffle=False))
-            # train_loader = DataLoader(X_train_vertical_FL[organization_idx], batch_size=args.batch_size)
-            # test_loader = DataLoader(X_test_vertical_FL[organization_idx], batch_size=len(X_test_vertical_FL[organization_idx]), shuffle=False)
                       
-            
-        # y_train = torch.from_numpy(y_train).long()
-        # y_test = torch.from_numpy(y_test).long()
-        
         y_train = torch.from_numpy(y_train.to_numpy()).float()
         y_test = torch.from_numpy(y_test.to_numpy()).float()
     
-        train_loader_list.append(DataLoader(y_train, batch_size=args.batch_size))
-        test_loader_list.append(DataLoader(y_test, batch_size=args.batch_size))
-  
         # set the neural network structure parameters
         organization_hidden_units_array = [np.array([128])]*organization_num
         organization_output_dim = np.array([64 for i in range(organization_num)])
