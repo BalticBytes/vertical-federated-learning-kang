@@ -1,0 +1,2 @@
+Attributes = ['race', 'sex', 'capital-gain', 'capital-loss', 'hours-per-week', 'native-country']
+Dataset shape = (32561, 354)

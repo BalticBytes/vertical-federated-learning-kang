@@ -1,0 +1,2 @@
+Attributes = ['age', 'workclass', 'fnlwgt', 'marital-status', 'occupation', 'relationship']
+Dataset shape = (32561, 21701)
