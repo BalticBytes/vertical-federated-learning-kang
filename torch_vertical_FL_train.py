@@ -243,7 +243,7 @@ def main(args):
                                 organization_hidden_units_array[organization_idx],
                                 organization_output_dim[organization_idx])
             loggers[organization_idx].info(organization_models[organization_idx])
-            loggers[organization_idx].info(f"Example row (0) = {X_train_vertical_FL[organization_idx][0]}")
+            loggers[organization_idx].info(f"Example row (0) = {X_train_vertical_FL[organization_idx][0]}, {min(X_train_vertical_FL[organization_idx][0])}, {max(X_train_vertical_FL[organization_idx][0])}")
         
         top_logger = logging.getLogger("top-logger")
         handler = logging.FileHandler(f"/workspaces/vertical-federated-learning-kang/logs/top.log", mode="w+")
