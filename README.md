@@ -12,6 +12,7 @@ The original authors are
 - Thilina Ranbaduge
 
 Corresponding paper can be found here: https://arxiv.org/abs/2202.04309
+
 Original github repository can be found here: https://github.com/AdamWei-boop/Vertical_FL
 
 # Changes from me
